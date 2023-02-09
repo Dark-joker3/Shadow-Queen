@@ -7,7 +7,7 @@ let handler = async function (m, { text, usedPrefix, command }) {
 	let namae = conn.getName(m.sender)
 	const sections = [
 	{
-	title: "Selecciona Tu Edad Aqui!",
+	title: "Select Your Age Here!",
 	rows: [
 	    {title: "Años Random", rowId: '.reg ' + namae + '.' + pickRandom(['30','29','28','27','26','25','24','23','22','21','20','19','18','17','16','15','14','13','12','11','10','9'])}
 	]
@@ -49,8 +49,8 @@ let handler = async function (m, { text, usedPrefix, command }) {
 const listMessage = {
   text: `Por favor selecciona tu edad pulsando el boton...\n*Tu nombre:* ${conn.getName(m.sender)}\nQuieres poner otro mombre? Escribe *${usedPrefix + command} TuNombre.TusAños*`,
   footer: global.wm,
-  title: "━━━━「 Registro 」━━━━",
-  buttonText: "Pulsa Aqui!",
+  title: "━━━━「 Register 」━━━━",
+  buttonText: "Press here!",
   sections
 }
 
@@ -70,10 +70,10 @@ const listMessage = {
   let sn = createHash('md5').update(m.sender).digest('hex')
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : m.fromMe ? conn.user.jid : m.sender
   m.reply(`
-━━━━ 「 *Registro Completado* 」━━━━
+━━━━ 「 *Register Complete* 」━━━━
 ╭─• 〘 INFO 〙
-│✧ *Nombre:* ${name}
-│✧ *Edad:* ${age} Años
+│✧ *Name:* ${name}
+│✧ *Age:* ${age} Años
 │✧ *SN:* ${sn}
 ▣──────···
 `.trim())
