@@ -21,5 +21,5 @@ await conn.sendMessage(m.chat, { document: { url: n2 }, mimetype: 'video/mp4', f
 } catch {
 await conn.reply(m.chat, '*[❗] ERROR When Uploading*', m)}
 }}
-handler.command = /^ytmp4doc|ytvdoc|ytmp4.2|ytv.2$/i
+handler.command = /^ytmp4doc|ytvdoc|ytmp4.2|ytv.2|video$/i
 export default handler
