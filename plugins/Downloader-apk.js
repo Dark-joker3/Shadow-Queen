@@ -1,4 +1,3 @@
-const Aqua = require('../events');
 const Config = require('../config');
 let wk = Config.WORKTYPE == 'public' ? false : true
 const Language = require('../language');
