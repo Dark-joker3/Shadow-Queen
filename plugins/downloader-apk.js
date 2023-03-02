@@ -8,22 +8,16 @@ const play = require('playstore-scraper')
 const { webp2img } = require('../lib/ezgif');
 var DOWN =''
    if (Config.LANG == 'EN') DOWN  = '*📥Downloading your APK...*'
-   if (Config.LANG == 'SI') DOWN = '*📥ඔබ සෙවූ apk ගොනුව බාගත කරමින් පවතී...*'
 var UP =''
    if (Config.LANG == 'EN') UP  = '*📤Uploading your APK...*'
-   if (Config.LANG == 'SI') UP = '*📤ඔබ සෙවූ apk ගොනුව ගෙන එමින් පවතී...*'
 var N_FOUND =''
    if (Config.LANG == 'EN') N_FOUND  = '*🧜‍♀️🧜‍♂️APK not found*'
-   if (Config.LANG == 'SI') N_FOUND = '*🧜‍♂️🧜‍♀️ඔබ සෙවූ apk ගොනුව හමු නොවීය.*'
 var NEED =''
    if (Config.LANG == 'EN') NEED  = '*🧜‍♀️🧜‍♂️Please enter a valid google play store apk link.\nyou can get it using .findapk command*'
-   if (Config.LANG == 'SI') NEED = '*🧜‍♀️🧜‍♂️කරුණාකර වලංගු google play store app link එකක් ඇතුළත් කරන්න.\n.findapk විධානය මගින්ද එම ලින්ක් ලබා ගත හැකිය.*'
 var DESC =''
    if (Config.LANG == 'EN') DESC  = 'download APK from google play store'
-   if (Config.LANG == 'SI') DESC = 'google play store වෙතින් apk ගෙන එයි.'
 var SDESC =''
    if (Config.LANG == 'EN') SDESC = '*it searchs on google play store*'
-   if (Config.LANG == 'SI') SDESC= '*google play store හි සර්ච් කරයි*'
 
 Aqua.addCommand({ pattern: 'findapk ?(.*)', fromMe: wk, desc:SDESC, deleteCommand: false }, async (message, match) => {
    
@@ -40,7 +34,7 @@ Aqua.addCommand({ pattern: 'findapk ?(.*)', fromMe: wk, desc:SDESC, deleteComman
    ini_txt += `🔗 Link : ${x.link}\n`
 	ini_txt += `─────────────────\n\n`
         }
-        await message.client.sendMessage(message.jid, '╔═══════════════╗\n║ *🤹‍♂️AQUA PlayStore Search🤹‍♀️*║\n╚═══════════════╝\n\n' + ' *─────────────────* \n\n' + ini_txt  ,MessageType.text, {quoted: message.data});
+        await message.client.sendMessage(message.jid, '╔═══════════════╗\n║ *Black-KD PlayStore Search*║\n╚═══════════════╝\n\n' + ' *─────────────────* \n\n' + ini_txt  ,MessageType.text, {quoted: message.data});
  return await message.client.deleteMessage(message.jid, {id: load.key.id, remoteJid: message.jid, fromMe: true})
 
 })
@@ -65,7 +59,7 @@ Aqua.addCommand({ pattern: 'findapk ?(.*)', fromMe: wk, desc:SDESC, deleteComman
   const icon = try1.icon
   const rating = try1.rating
   const developer = try1.additional_info.developer
-  const msg ='┌───[🐋𝙰𝚀𝚄𝙰𝙱𝙾𝚃🐋]\n\n  *APK DOWNLOADER*\n\n│🎁ɴᴀᴍᴇ :' + name + '\n\n│🕹️ᴠᴇʀsɪᴏɴ : ' + version + '\n\n│👨‍💻ᴅᴇᴠᴇʟᴏᴘᴇʀ : ' + developer + '\n\n│✨ʀᴀᴛɪɴɢ : ' + rating + '\n\n└───────────◉'
+  const msg ='┌───[Black-KD]\n\n  *APK DOWNLOADER*\n\n│🎁ɴᴀᴍᴇ :' + name + '\n\n│🕹️ᴠᴇʀsɪᴏɴ : ' + version + '\n\n│👨‍💻ᴅᴇᴠᴇʟᴏᴘᴇʀ : ' + developer + '\n\n│✨ʀᴀᴛɪɴɢ : ' + rating + '\n\n└───────────◉'
   const res =   await webp2img(icon)
    const res2 = await axios.get( res, { responseType: 'arraybuffer'})
   var up = await message.client.sendMessage(message.jid,UP,MessageType.text, {quoted: message.data});
@@ -106,7 +100,7 @@ Aqua.addCommand({ pattern: 'findapk ?(.*)', fromMe: wk, desc:SDESC, deleteComman
   const icon = try1.icon
   const rating = try1.rating
   const developer = try1.additional_info.developer
-  const msg ='┌───[🐋𝙰𝚀𝚄𝙰𝙱𝙾𝚃🐋]\n\n  *APK DOWNLOADER*\n\n│🎁ɴᴀᴍᴇ :' + name + '\n\n│🕹️ᴠᴇʀsɪᴏɴ : ' + version + '\n\n│👨‍💻ᴅᴇᴠᴇʟᴏᴘᴇʀ : ' + developer + '\n\n│✨ʀᴀᴛɪɴɢ : ' + rating + '\n\n└───────────◉'
+  const msg ='┌───[Black-KD]\n\n  *APK DOWNLOADER*\n\n│🎁ɴᴀᴍᴇ :' + name + '\n\n│🕹️ᴠᴇʀsɪᴏɴ : ' + version + '\n\n│👨‍💻ᴅᴇᴠᴇʟᴏᴘᴇʀ : ' + developer + '\n\n│✨ʀᴀᴛɪɴɢ : ' + rating + '\n\n└───────────◉'
   const res =   await webp2img(icon)
    const res2 = await axios.get( res, { responseType: 'arraybuffer'})
   var up = await message.client.sendMessage(message.jid,UP,MessageType.text, {quoted: message.data});
