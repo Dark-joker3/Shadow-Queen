@@ -1,6 +1,5 @@
 const Config = require('../config');
 let wk = Config.WORKTYPE == 'public' ? false : true
-const Language = require('../language');
 const Lang = Language.getString('scrapers');
 const {MessageType, GroupSettingChange, Mimetype, MessageOptions} = require('@adiwajshing/baileys');
 const axios = require('axios')
