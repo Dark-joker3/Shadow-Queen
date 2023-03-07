@@ -65,14 +65,14 @@ global.db.chain = chain(global.db.data)
 }
 loadDatabase()
 
-global.authFile = `MysticSession`
-const { state, saveState, saveCreds } = await useMultiFileAuthState(global.authFile)
+global.authFile = `Session`
+const { state, saveState, saveCreds } = useSingleFileAuthState(`./${sessionName}.json`)
 
 const connectionOptions = {
 printQRInTerminal: true,
 auth: state,
 logger: P({ level: 'silent'}),
-browser: ['Shizu-Bot','Safari','1.0.0']
+browser: ['Shadow-Queen','Safari','1.0.0']
 }
 
 global.conn = makeWASocket(connectionOptions)
