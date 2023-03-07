@@ -66,24 +66,25 @@ global.db.chain = chain(global.db.data)
 loadDatabase()
 
 global.authFile = `Session`
-const { state, saveState, saveCreds } = useSingleFileAuthState(`./${sessionName}.json`)
+const { state, saveState, saveCreds } = await useMultiFileAuthState(global.authFile)
+const msgRetryCounterMap = MessageRetryMap => { }
+let { version } = await fetchLatestBaileysVersion();
 
 const connectionOptions = {
 printQRInTerminal: true,
+patchMessageBeforeSending: (message) => {
+const requiresPatch = !!( message.buttonsMessage || message.templateMessage || message.listMessage );
+if (requiresPatch) { message = { viewOnceMessage: { message: { messageContextInfo: { deviceListMetadataVersion: 2, deviceListMetadata: {}, }, ...message, },},};}
+return message;},
+getMessage: async (key) => ( opts.store.loadMessage(/** @type {string} */(key.remoteJid), key.id) || opts.store.loadMessage(/** @type {string} */(key.id)) || {} ).message || { conversation: 'Please send messages again' },   
+msgRetryCounterMap,
+logger: pino({ level: 'silent' }),
 auth: state,
-logger: P({ level: 'silent'}),
-browser: ['Shadow-Queen','Safari','1.0.0']
+browser: ['Shadow-MD','Edge','1.0.1'],
+version   
 }
 
 global.conn = makeWASocket(connectionOptions)
-/* Solucion mensajes en espera */
-//global.conn = makeWASocket({ ...connectionOptions, ...opts.connectionOptions,
-//getMessage: async (key) => (
-//opts.store.loadMessage(/** @type {string} */(key.remoteJid), key.id) ||
-//opts.store.loadMessage(/** @type {string} */(key.id)) || {}
-//).message || { conversation: 'Please send messages again' },
-//})
-
 conn.isInit = false
 
 if (!opts['test']) {
@@ -93,48 +94,73 @@ if (opts['autocleartmp'] && (global.support || {}).find) (tmp = [os.tmpdir(), 't
 }, 30 * 1000)}
 
 if (opts['server']) (await import('./server.js')).default(global.conn, PORT)
-
+       
 function clearTmp() {
 const tmp = [tmpdir(), join(__dirname, './tmp')]
 const filename = []
 tmp.forEach(dirname => readdirSync(dirname).forEach(file => filename.push(join(dirname, file))))
-   
-     /* Y ese fue el momazo mas bueno del mundo
-        Aunque no dudara tan solo un segundo
-        Mas no me arrepiento de haberme reido
-        Por que la grasa es un sentimiento
-        Y ese fue el momazo mas bueno del mundo
-        Aunque no dudara tan solo un segundo
-        que me arrepiento de ser un grasoso
-        Por que la grasa es un sentimiento
-        - El waza 👻👻👻👻 (Aiden)            */
-   
-/*readdirSync("./jadibts").forEach(file => {
-const btprs = function (folder) {
-console.log(folder)
-let status = false
-Object.keys(global.conns).forEach((key) => {
-if (global.conns[key].uniqid == folder) status = true });
-return status }
-let lrp = btprs(file)
-console.log(lrp)
-if (!lrp) {rmSync("./jadibts/" + file, { recursive: true, force: true })}
-else if (lrp){
-try {
-readdirSync("./jadibts/" + file).forEach(file2 => {
-if (file2 !== "creds.json") { unlinkSync("./jadibts/" + file + "/" + file2) }})
-} catch {}}})*/
-       
-readdirSync("./MysticSession").forEach(file => {
-if (file !== 'creds.json') {
-unlinkSync("./MysticSession/" + file, { recursive: true, force: true })}})    
 return filename.map(file => {
-const stats = statSync(file)
-if (stats.isFile() && (Date.now() - stats.mtimeMs >= 1000 * 60 * 3)) return unlinkSync(file) // 3 minutes
-return false })}
+    const stats = statSync(file)
+    if (stats.isFile() && (Date.now() - stats.mtimeMs >= 1000 * 60 * 3)) return unlinkSync(file) // 3 minutes
+    return false })}
+
+function purgeSession() {
+    let prekey = []
+    let directorio = readdirSync("./Session")
+    let filesFolderPreKeys = directorio.filter(file => {
+        return file.startsWith('pre-key-')
+    })
+    prekey = [...prekey, ...filesFolderPreKeys]
+    filesFolderPreKeys.forEach(files => {
+    unlinkSync(`./Session/${files}`)
+})
+
+}  
+function purgeSessionSB() {
+let listaDirectorios = readdirSync('./jadibts/');
+console.log(listaDirectorios)
+      let SBprekey = []
+listaDirectorios.forEach(filesInDir => {
+    let directorio = readdirSync(`./jadibts/${filesInDir}`)
+    console.log(directorio)
+    let DSBPreKeys = directorio.filter(fileInDir => {
+    return fileInDir.startsWith('pre-key-')
+    })
+    SBprekey = [...SBprekey, ...DSBPreKeys]
+    DSBPreKeys.forEach(fileInDir => {
+        unlinkSync(`./jadibts/${filesInDir}/${fileInDir}`) 
+    })
+    })
+    
+}
+
+function purgeOldFiles() {
+const directories = ['./Session/', './jadibts/']
+const oneHourAgo = Date.now() - (60 * 60 * 1000) 
+directories.forEach(dir => {
+    readdirSync(dir, (err, files) => {
+        if (err) throw err
+        files.forEach(file => {
+            const filePath = path.join(dir, file)
+            stat(filePath, (err, stats) => {
+                if (err) throw err;
+                if (stats.isFile() && stats.mtimeMs < oneHourAgo && file !== 'creds.json') { 
+                    unlinkSync(filePath, err => {  
+                        if (err) throw err
+                        console.log(`Archivo ${file} borrado con éxito`)
+                    })
+                } else {  
+                    console.log(`Archivo ${file} no borrado`) 
+                } 
+            }) 
+        }) 
+    }) 
+})
+}
 
 async function connectionUpdate(update) {
 const { connection, lastDisconnect, isNewLogin } = update
+global.stopped = connection    
 if (isNewLogin) conn.isInit = true
 const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode
 if (code && code !== DisconnectReason.loggedOut && conn?.ws.readyState !== CONNECTING) {
@@ -142,9 +168,12 @@ console.log(await global.reloadHandler(true).catch(console.error))
 global.timestamp.connect = new Date
 }
 if (global.db.data == null) loadDatabase()
+if (update.qr != 0 && update.qr != undefined) {
+console.log(chalk.yellow(lenguajeGB['smsCodigoQR']()))}  
 if (connection == 'open') {
-console.log(chalk.yellow('▣──────────────────────────────···\n│\n│❧ successfully connected to whatsapp ✅\n│\n▣──────────────────────────────···'))}
-}
+console.log(chalk.yellow(lenguajeGB['smsConexion']()))}
+if (connection == 'close') {
+console.log(chalk.yellow(lenguajeGB['smsConexionOFF']()))}}
 
 process.on('uncaughtException', console.error)
 
@@ -173,6 +202,128 @@ conn.ev.off('call', conn.onCall)
 conn.ev.off('connection.update', conn.connectionUpdate)
 conn.ev.off('creds.update', conn.credsUpdate)
 }
+  
+//Información para Grupos
+conn.welcome = lenguajeGB['smsWelcome']() 
+conn.bye = lenguajeGB['smsBye']() 
+conn.spromote = lenguajeGB['smsSpromote']() 
+conn.sdemote = lenguajeGB['smsSdemote']() 
+conn.sDesc = lenguajeGB['smsSdesc']() 
+conn.sSubject = lenguajeGB['smsSsubject']() 
+conn.sIcon = lenguajeGB['smsSicon']() 
+conn.sRevoke = lenguajeGB['smsSrevoke']() 
+
+conn.handler = handler.handler.bind(global.conn)
+conn.participantsUpdate = handler.participantsUpdate.bind(global.conn)
+conn.groupsUpdate = handler.groupsUpdate.bind(global.conn)
+conn.onDelete = handler.deleteUpdate.bind(global.conn)
+conn.onCall = handler.callUpdate.bind(global.conn)
+conn.connectionUpdate = connectionUpdate.bind(global.conn)
+conn.credsUpdate = saveCreds.bind(global.conn, true)
+
+const currentDateTime = new Date();
+const messageDateTime = new Date(conn.ev);
+if (currentDateTime >= messageDateTime) {
+    let chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map(v => v[0])
+  //console.log(chats, conn.ev); 
+} else {
+    let chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map(v => v[0])}
+ //console.log(chats, 'Omitiendo mensajes en espera.'); }
+
+conn.ev.on('messages.upsert', conn.handler)
+conn.ev.on('group-participants.update', conn.participantsUpdate)
+conn.ev.on('groups.update', conn.groupsUpdate)
+conn.ev.on('message.delete', conn.onDelete)
+conn.ev.on('call', conn.onCall)
+conn.ev.on('connection.update', conn.connectionUpdate)
+conn.ev.on('creds.update', conn.credsUpdate)
+isInit = false
+return true
+}
+
+const pluginFolder = global.__dirname(join(__dirname, './plugins/index'))
+const pluginFilter = filename => /\.js$/.test(filename)
+global.plugins = {}
+async function filesInit() {
+for (let filename of readdirSync(pluginFolder).filter(pluginFilter)) {
+try {
+let file = global.__filename(join(pluginFolder, filename))
+const module = await import(file)
+global.plugins[filename] = module.default || module
+} catch (e) {
+conn.logger.error(e)
+delete global.plugins[filename]
+}}}
+filesInit().then(_ => Object.keys(global.plugins)).catch(console.error)
+
+global.reload = async (_ev, filename) => {
+if (pluginFilter(filename)) {
+let dir = global.__filename(join(pluginFolder, filename), true)
+if (filename in global.plugins) {
+if (existsSync(dir)) conn.logger.info(` updated plugin - '${filename}'`)
+else {
+conn.logger.warn(`deleted plugin - '${filename}'`)
+return delete global.plugins[filename]
+}
+} else conn.logger.info(`new plugin - '${filename}'`)
+let err = syntaxerror(readFileSync(dir), filename, {
+sourceType: 'module',
+allowAwaitOutsideFunction: true
+})
+if (err) conn.logger.error(`syntax error while loading '${filename}'\n${format(err)}`)
+else try {
+const module = (await import(`${global.__filename(dir)}?update=${Date.now()}`))
+global.plugins[filename] = module.default || module
+} catch (e) {
+conn.logger.error(`error require plugin '${filename}\n${format(e)}'`)
+} finally {
+global.plugins = Object.fromEntries(Object.entries(global.plugins).sort(([a], [b]) => a.localeCompare(b)))
+}}}
+Object.freeze(global.reload)
+watch(pluginFolder, global.reload)
+await global.reloadHandler()
+async function _quickTest() {
+let test = await Promise.all([
+spawn('ffmpeg'),
+spawn('ffprobe'),
+spawn('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-filter_complex', 'color', '-frames:v', '1', '-f', 'webp', '-']),
+spawn('convert'),
+spawn('magick'),
+spawn('gm'),
+spawn('find', ['--version'])
+].map(p => {
+return Promise.race([
+new Promise(resolve => {
+p.on('close', code => {
+resolve(code !== 127)
+})}),
+new Promise(resolve => {
+p.on('error', _ => resolve(false))
+})])}))
+let [ffmpeg, ffprobe, ffmpegWebp, convert, magick, gm, find] = test
+let s = global.support = { ffmpeg, ffprobe, ffmpegWebp, convert, magick, gm, find }
+Object.freeze(global.support)
+}
+setInterval(async () => {
+if (stopped == 'close') return
+var a = await clearTmp()        
+console.log(chalk.cyanBright(lenguajeGB['smsClearTmp']()))
+}, 300000) //15 min
+setInterval(async () => {
+    await purgeSession()
+console.log(chalk.cyanBright(`\n𓃠 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈✦ AUTOPURGESESSIONS ✦┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈ 𓃠\n│\n│★ 𝙇𝙊𝙎 𝘼𝙍𝘾𝙃𝙄𝙑𝙊𝙎 𝙎𝙄𝘿𝙊 𝙀𝙇𝙄𝙈𝙄𝙉𝘼𝘿𝙊𝙎 𝘾𝙊𝙉 𝙀𝙓𝙄𝙏𝙊 😼✨\n│\n𓃠 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈✦ ✅ ✦┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈ 𓃠\n`))
+}, 1000 * 60 * 60)
+setInterval(async () => {
+     await purgeSessionSB()
+console.log(chalk.cyanBright(`\n𓃠 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈✦ AUTO_PURGE_SESSIONS_SUB-BOTS  ✦┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈ 𓃠\n│\n│★ 𝙇𝙊𝙎 𝘼𝙍𝘾𝙃𝙄𝙑𝙊𝙎 𝙎𝙄𝘿𝙊 𝙀𝙇𝙄𝙈𝙄𝙉𝘼𝘿𝙊𝙎 𝘾𝙊𝙉 𝙀𝙓𝙄𝙏𝙊 😼✨\n│\n𓃠 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈✦ ✅ ✦┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈ 𓃠\n`))
+}, 1000 * 60 * 60)
+setInterval(async () => {
+    await purgeOldFiles()
+console.log(chalk.cyanBright(`\n𓃠 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈✦ AUTO_PURGE_OLDFILES  ✦┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈ 𓃠\n│\n│★ 𝙇𝙊𝙎 𝘼𝙍𝘾𝙃𝙄𝙑𝙊𝙎 𝙎𝙄𝘿𝙊 𝙀𝙇𝙄𝙈𝙄𝙉𝘼𝘿𝙊𝙎 𝘾𝙊𝙉 𝙀𝙓𝙄𝙏𝙊 😼✨\n│\n𓃠 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈✦ ✅ ✦┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈ 𓃠\n`))
+}, 1000 * 60 * 60)
+_quickTest()
+.then(() => conn.logger.info(lenguajeGB['smsCargando']()))
+.catch(console.error)
   
 conn.welcome = '*╭┈⊰* @subject *⊰┈ ✦*\n*┃✨ WELCOME!!*\n┃💖 @user\n┃📄 *READ THE DESCRIPTION OF THE ┃GROUP*\n*╰┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈ ✦*\n\n@desc*'
 conn.bye = '*╭┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈⊰*\n┃ @user\n┃ *THE GROUP DOESN"T KNOW, BYE!!* ┃😎\n*╰┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈⊰*'
