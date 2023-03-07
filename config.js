@@ -13,6 +13,8 @@ global.owner = [
 ] 
 global.suittag = ['94775207710'] 
 global.prems = ['94775207710','94702262806'] 
+global.sessionName = 'session'
+global.prefa = ['','!','.','🐦','🐤','🗿']
 
 global.packname = 'x_Black-KDX_x'
 global.author = '⍟Black » KDX⍟'
