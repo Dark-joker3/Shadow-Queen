@@ -18,4 +18,14 @@
   {
     "url": "https://github.com/clhuang/heroku-buildpack-webp-binaries.git"
   }
+     ],
+    "addons": [
+        {
+            "plan": "heroku-postgresql",
+            "options": {
+                "version": "13"
+            }
+        }
+    ],
+    "stack": "heroku-22"
 }
