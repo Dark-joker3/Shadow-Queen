@@ -1,9 +1,10 @@
 {
-  "name": "Ikratos-MD",
-  "description": "Follow me on Instagram: @itx_ahmad.ali (≧▽≦)",
-  "repository": "https://github.com/xIKRATOSx/Shizu-Bot-MD",
+  "name": "Shadow-Queen-MD",
+  "description": "Contact me on whatsapp: wa.me/94775207710 (≧▽≦)",
+  "repository": "https://github.com/Dark-joker3/Shadow-Queen",
   "logo": "https://raw.githubusercontent.com/Shizu-Hub/Shizu-Bot/master/Menu2.jpg",
   "keywords": ["java", "bot", "whatsapp-bot", "whatsapp-automation"],
+  "success_url": "https://dashboard.heroku.com/apps/",
   "buildpacks": [
   {
     "url": "heroku/nodejs"
@@ -14,5 +15,14 @@
   {
     "url": "https://github.com/bogini/heroku-buildpack-graphicsmagick"
   }    
- ]
+ ],
+ "addons": [
+        {
+            "plan": "heroku-postgresql",
+            "options": {
+                "version": "13"
+            }
+        }
+    ],
+    "stack": "heroku-22"
 }
