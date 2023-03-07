@@ -29,7 +29,9 @@
 ### `—◉ 💕 PLUGINS 💕`
 - HAVE IDEAS FOR PLUGINS OR WANT TO GET MORE PLUGINS? CLICK ON [https://github.com/theh2so4/Mystic-Plugins](https://github.com/theh2so4/Mystic-Plugins)
 
-### For heroku deployers: [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+### For heroku deployers: 
+ 
+ [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ### `—◉ 👾 ACTIVATE IN TERMUX 👾` 
 - TYPE THE FOLLOWING COMMANDS ONE BY ONE:
