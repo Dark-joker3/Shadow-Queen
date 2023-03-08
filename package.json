@@ -10,7 +10,8 @@
         "plugins": "plugins"
     },
     "scripts": {
-        "start": "node index.js",
+        "start": "pm2 start index.js--deep-monitoring--attach--name shadow",
+        "stop": "pm2 stop shadow",
         "test": "node test.js",
         "test2": "nodemon index.js"
     },
