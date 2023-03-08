@@ -202,24 +202,6 @@ conn.ev.off('call', conn.onCall)
 conn.ev.off('connection.update', conn.connectionUpdate)
 conn.ev.off('creds.update', conn.credsUpdate)
 }
-  
-//Información para Grupos
-conn.welcome = lenguajeGB['smsWelcome']() 
-conn.bye = lenguajeGB['smsBye']() 
-conn.spromote = lenguajeGB['smsSpromote']() 
-conn.sdemote = lenguajeGB['smsSdemote']() 
-conn.sDesc = lenguajeGB['smsSdesc']() 
-conn.sSubject = lenguajeGB['smsSsubject']() 
-conn.sIcon = lenguajeGB['smsSicon']() 
-conn.sRevoke = lenguajeGB['smsSrevoke']() 
-
-conn.handler = handler.handler.bind(global.conn)
-conn.participantsUpdate = handler.participantsUpdate.bind(global.conn)
-conn.groupsUpdate = handler.groupsUpdate.bind(global.conn)
-conn.onDelete = handler.deleteUpdate.bind(global.conn)
-conn.onCall = handler.callUpdate.bind(global.conn)
-conn.connectionUpdate = connectionUpdate.bind(global.conn)
-conn.credsUpdate = saveCreds.bind(global.conn, true)
 
 const currentDateTime = new Date();
 const messageDateTime = new Date(conn.ev);
@@ -230,6 +212,23 @@ if (currentDateTime >= messageDateTime) {
     let chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map(v => v[0])}
  //console.log(chats, 'Omitiendo mensajes en espera.'); }
 
+conn.welcome = '*╭┈⊰* @subject *⊰┈ ✦*\n*┃✨ WELCOME!!*\n┃💖 @user\n┃📄 *READ THE DESCRIPTION OF THE ┃GROUP*\n*╰┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈ ✦*\n\n@desc*'
+conn.bye = '*╭┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈⊰*\n┃ @user\n┃ *THE GROUP DOESN"T KNOW, BYE!!* ┃😎\n*╰┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈⊰*'
+conn.spromote = '*@user is now group admin!!*'
+conn.sdemote = '*@user is not an admin now !!*'
+conn.sDesc = '*group description has been changed*\n\n*NEW DESCRIPTION:* @desc'
+conn.sSubject = '*group NAME has been changed*\n*NEW NAME:* @subject'
+conn.sIcon = '*GROUP ICON HAS BEEN CHANGED SUCESSFULLY!!*'
+conn.sRevoke = '*THE GROUP LINK HAS BEEN UPDATED!!*\n*NEW LINK:* @revoke'
+
+conn.handler = handler.handler.bind(global.conn)
+conn.participantsUpdate = handler.participantsUpdate.bind(global.conn)
+conn.groupsUpdate = handler.groupsUpdate.bind(global.conn)
+conn.onDelete = handler.deleteUpdate.bind(global.conn)
+conn.onCall = handler.callUpdate.bind(global.conn)
+conn.connectionUpdate = connectionUpdate.bind(global.conn)
+conn.credsUpdate = saveCreds.bind(global.conn, true)
+       
 conn.ev.on('messages.upsert', conn.handler)
 conn.ev.on('group-participants.update', conn.participantsUpdate)
 conn.ev.on('groups.update', conn.groupsUpdate)
@@ -324,102 +323,5 @@ console.log(chalk.cyanBright(`\n𓃠 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈�
 _quickTest()
 .then(() => conn.logger.info(lenguajeGB['smsCargando']()))
 .catch(console.error)
-  
-conn.welcome = '*╭┈⊰* @subject *⊰┈ ✦*\n*┃✨ WELCOME!!*\n┃💖 @user\n┃📄 *READ THE DESCRIPTION OF THE ┃GROUP*\n*╰┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈ ✦*\n\n@desc*'
-conn.bye = '*╭┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈⊰*\n┃ @user\n┃ *THE GROUP DOESN"T KNOW, BYE!!* ┃😎\n*╰┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈⊰*'
-conn.spromote = '*@user is now group admin!!*'
-conn.sdemote = '*@user is not an admin now !!*'
-conn.sDesc = '*group description has been changed*\n\n*NEW DESCRIPTION:* @desc'
-conn.sSubject = '*group NAME has been changed*\n*NEW NAME:* @subject'
-conn.sIcon = '*GROUP ICON HAS BEEN CHANGED SUCESSFULLY!!*'
-conn.sRevoke = '*THE GROUP LINK HAS BEEN UPDATED!!*\n*NEW LINK:* @revoke'
 
-conn.handler = handler.handler.bind(global.conn)
-conn.participantsUpdate = handler.participantsUpdate.bind(global.conn)
-conn.groupsUpdate = handler.groupsUpdate.bind(global.conn)
-conn.onDelete = handler.deleteUpdate.bind(global.conn)
-conn.onCall = handler.callUpdate.bind(global.conn)
-conn.connectionUpdate = connectionUpdate.bind(global.conn)
-conn.credsUpdate = saveCreds.bind(global.conn, true)
 
-conn.ev.on('messages.upsert', conn.handler)
-conn.ev.on('group-participants.update', conn.participantsUpdate)
-conn.ev.on('groups.update', conn.groupsUpdate)
-conn.ev.on('message.delete', conn.onDelete)
-conn.ev.on('call', conn.onCall)
-conn.ev.on('connection.update', conn.connectionUpdate)
-conn.ev.on('creds.update', conn.credsUpdate)
-isInit = false
-return true
-}
-
-const pluginFolder = global.__dirname(join(__dirname, './plugins/index'))
-const pluginFilter = filename => /\.js$/.test(filename)
-global.plugins = {}
-async function filesInit() {
-for (let filename of readdirSync(pluginFolder).filter(pluginFilter)) {
-try {
-let file = global.__filename(join(pluginFolder, filename))
-const module = await import(file)
-global.plugins[filename] = module.default || module
-} catch (e) {
-conn.logger.error(e)
-delete global.plugins[filename]
-}}}
-filesInit().then(_ => Object.keys(global.plugins)).catch(console.error)
-
-global.reload = async (_ev, filename) => {
-if (pluginFilter(filename)) {
-let dir = global.__filename(join(pluginFolder, filename), true)
-if (filename in global.plugins) {
-if (existsSync(dir)) conn.logger.info(` updated plugin - '${filename}'`)
-else {
-conn.logger.warn(`deleted plugin - '${filename}'`)
-return delete global.plugins[filename]
-}
-} else conn.logger.info(`new plugin - '${filename}'`)
-let err = syntaxerror(readFileSync(dir), filename, {
-sourceType: 'module',
-allowAwaitOutsideFunction: true
-})
-if (err) conn.logger.error(`syntax error while loading '${filename}'\n${format(err)}`)
-else try {
-const module = (await import(`${global.__filename(dir)}?update=${Date.now()}`))
-global.plugins[filename] = module.default || module
-} catch (e) {
-conn.logger.error(`error require plugin '${filename}\n${format(e)}'`)
-} finally {
-global.plugins = Object.fromEntries(Object.entries(global.plugins).sort(([a], [b]) => a.localeCompare(b)))
-}}}
-Object.freeze(global.reload)
-watch(pluginFolder, global.reload)
-await global.reloadHandler()
-async function _quickTest() {
-let test = await Promise.all([
-spawn('ffmpeg'),
-spawn('ffprobe'),
-spawn('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-filter_complex', 'color', '-frames:v', '1', '-f', 'webp', '-']),
-spawn('convert'),
-spawn('magick'),
-spawn('gm'),
-spawn('find', ['--version'])
-].map(p => {
-return Promise.race([
-new Promise(resolve => {
-p.on('close', code => {
-resolve(code !== 127)
-})}),
-new Promise(resolve => {
-p.on('error', _ => resolve(false))
-})])}))
-let [ffmpeg, ffprobe, ffmpegWebp, convert, magick, gm, find] = test
-let s = global.support = { ffmpeg, ffprobe, ffmpegWebp, convert, magick, gm, find }
-Object.freeze(global.support)
-}
-setInterval(async () => {
-var a = await clearTmp()
-console.log(chalk.cyanBright(`\n▣─────────[ 𝙰𝚄𝚃𝙾𝙲𝙻𝙴𝙰𝚁𝚃𝙼𝙿 ]────────────···\n│\n▣─❧ FILES DELETED ✅\n│\n▣─────────────────────────────────────···\n`))
-}, 180000)
-_quickTest()
-.then(() => conn.logger.info(`Ƈᴀʀɢᴀɴᴅᴏ．．．\n`))
-.catch(console.error)
