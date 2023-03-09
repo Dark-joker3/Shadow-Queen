@@ -12,7 +12,7 @@
     "scripts": {
         "start": "pm2 start index.js--deep-monitoring--attach--name shadow",
         "stop": "pm2 stop shadow",
-        "package": "yarn install --network-concurrency 1 && yarn global add pm2"
+        "package": "yarn install --network-concurrency 1 && yarn global add pm2",
         "test": "node test.js",
         "test2": "nodemon index.js"
     },
